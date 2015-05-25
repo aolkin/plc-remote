@@ -1,0 +1,3 @@
+[submodule "pi-hardware"]
+	path = pi-hardware
+	url = git@github.com:baryon5/pi-hardware.git
