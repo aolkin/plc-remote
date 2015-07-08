@@ -1,31 +1,31 @@
 {
-	"server": {
-		"address": "192.168.1.79",
-		"port": 7832,
-		"pickle_version": 4
-	},
-	"user": "lightingcrew",
-	"password": "",
+    "server": {
+	"address": "192.168.1.79",
+	"port": 7832,
+	"pickle_version": 4
+    },
+    "user": "lightingcrew",
+    "password": "",
 
-	"dimmers": 240,
+    "dimmers": 240,
 
-	"defaults": {
-		"cue": {
-			"up": 2,
-			"down": 2,
-			"upwait": 0,
-			"downwait": 0,
-			"follow": null,
-			"followtime": null
-		}
-	},
-
-	"logging": {
-		"errors": 2,
-		"warnings": 2,
-		"debug": 2,
-		"logging": 1,
-		"folder": ".",
-		"client": false
+    "defaults": {
+	"cue": {
+	    "up": 2,
+	    "down": 2,
+	    "upwait": 0,
+	    "downwait": 0,
+	    "follow": null,
+	    "followtime": null
 	}
+    },
+
+    "logging": {
+	"errors": 2,
+	"warnings": 2,
+	"debug": 0,
+	"logging": 1,
+	"folder": ".",
+	"client": false
+    }
 }

@@ -16,7 +16,8 @@ class PLCRemote(HardwareApp):
         self.add_hw(faders, keypad, display)
 
         self.bg = BackgroundContext(self)
-        self.manager = Manager(self.bg)
+        self.dimmers = DimmerContext(self)
+        self.manager = Manager(self.bg, self.dimmers)
 
     def run(self, conf=conf):
         coro = self.loop.create_connection(lambda: ClientProtocol(
