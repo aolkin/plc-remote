@@ -6,7 +6,7 @@ from plc.core.settings import Configuration
 
 remote = PLCRemote()
 conf = Configuration()
-conf.load(os.environ.get("PLC_SETTINGS","clientsettings.json"))
+conf.load(os.environ.get("PLC_SETTINGS","settings.json"))
 
 if __name__ == "__main__":
     remote.run(conf)
