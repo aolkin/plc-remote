@@ -5,8 +5,9 @@ if __name__ == "__main__":
     display = AnimatedDisplay()
     display.init()
     display.displayLoadingAnimation()
+    display.animateRow(2, "Step 1 of 5")
 
-import os
+import os, sys
 from plcpi import PLCRemote
 from plc.core.settings import Configuration
 
@@ -15,6 +16,6 @@ conf = Configuration()
 conf.load(os.environ.get("PLC_SETTINGS","settings.json"))
 
 if __name__ == "__main__":
-    display.stopLoadingAnimation()
-    display.cleanup()
-    remote.run(conf)
+    if "--search" in sys.argv or "-s" in sys.argv:
+        conf["server"]["address"] = None
+    remote.run(display, conf)

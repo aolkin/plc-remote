@@ -1,31 +1,30 @@
 {
-    "server": {
-	"address": "192.168.1.79",
-	"port": 7832,
-	"pickle_version": 4
-    },
-    "user": "lightingcrew",
-    "password": "",
-
-    "dimmers": 240,
-
     "defaults": {
-	"cue": {
-	    "up": 2,
-	    "down": 2,
-	    "upwait": 0,
-	    "downwait": 0,
-	    "follow": null,
-	    "followtime": null
-	}
+        "cue": {
+            "down": 2,
+            "downwait": 0,
+            "follow": null,
+            "followtime": null,
+            "up": 2,
+            "upwait": 0
+        }
     },
-
+    "dimmers": 240,
     "logging": {
-	"errors": 2,
-	"warnings": 2,
-	"debug": 0,
-	"logging": 1,
-	"folder": ".",
-	"client": false
-    }
+        "client": false,
+        "debug": 0,
+        "errors": 2,
+        "folder": ".",
+        "logging": 1,
+        "warnings": 2
+    },
+    "password": "",
+    "server": {
+        "address": "192.168.1.79",
+        "bcast_port": 7834,
+        "friendly_name": "Dummy Demo",
+        "pickle_version": 4,
+        "port": 7832
+    },
+    "user": "lightingcrew"
 }

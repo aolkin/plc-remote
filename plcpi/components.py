@@ -1,5 +1,7 @@
 
-from hardware import *
+from hardware.adc import ADCSet
+from hardware.keypad import LEDKeypad
+from hardware.display import ManagedDisplay
 
 faders = ADCSet(0x48, 3, True, 36, 3264, 0, 100)
 

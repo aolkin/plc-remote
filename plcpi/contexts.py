@@ -1,7 +1,8 @@
 
-from hardware import Context, str_to_bools
-from plc.core.data import DMX_MAX_SLOT_VALUE
+from hardware.app import Context
+from hardware.keypad import str_to_bools
 from plc.core.settings import conf
+from plc.core.data import *
 from plc.network.messages import *
 from .components import *
 
@@ -20,6 +21,9 @@ def justify(val, num, zero=False, trim=False):
         fill="0" if zero else " ", num=num,
         trimnum=("."+str(num) if trim else ""))
     return fmt.format(val)
+
+def void(*args, **kwargs):
+    pass
 
 KEYPAD_MAP = {
     0:  7,
@@ -78,6 +82,18 @@ class NumericEntry:
         self.ready = False
         self.buf = 0
         
+    def block_numeric_entry(self):
+        self.capture(keypad, (0,1,2,4,5,6,8,9,10,13,14), void)
+        for i in range(3):
+            self.output(keypad, i, 0, str_to_bools("   "))
+        self.output(keypad, 3, 1, str_to_bools("  "))
+
+    def reset_numeric_entry(self):
+        self.release(keypad, (0,1,2,4,5,6,8,9,10,13,14))
+        for i in range(3):
+            self.outreset(keypad, i, range(0,3), False)
+        self.outreset(keypad, 3, range(1,3), False)
+        
 class BackgroundContext(PLCContext, NumericEntry):
     """Uses display, keypad (1-11, 13, 15), sub faders and GM
     App must have faders, keypad, and display attributes."""
@@ -85,6 +101,7 @@ class BackgroundContext(PLCContext, NumericEntry):
     def set_manager(self, manager):
         super().set_manager(manager)
         self.xtra = SubContext(self.app)
+        self.entry_mode = None
         
     def status(self, val):
         self.output(display, 3, 8, "{: >12.12}".format(val))
@@ -102,11 +119,20 @@ class BackgroundContext(PLCContext, NumericEntry):
         self.status("*No Cue Ops*")
 
     def begin_entry(self, pin):
+        self.record_enable = False
+        self.at_mode = False
+        if self.entry_mode == pin:
+            self.entry_mode = None
+            self.reset_numeric_entry()
+            self.release(keypad, (12, 15))
+            self.status("Ready")
+            for i in range(4):
+                self.outreset(keypad, i, 3, False)
+            return False
         self.entry_mode = pin
         for i in range(3):
             self.output(keypad, i, 3, False)
         self.output(keypad, pin // 4, 3, True)
-        self.at_mode = False
         self.prep_numeric_entry()
         if pin == 11:
             self.limit = conf["dimmers"]
@@ -118,15 +144,21 @@ class BackgroundContext(PLCContext, NumericEntry):
         
     def handle_number(self, pin):
         super().handle_number(pin)
+        self.output(keypad, 3, 3, True)
         self.output(display, 3, 17, justify(self.buf, 3))
 
     def handle_enter(self, pin):
-        """At"""
         if self.at_mode:
             self.app.protocol.send_message(DimmerMessage(
                 { self.num - 1: from_percent(self.buf) }))
             self.at_mode = False
             self.status("Ready")
+            self.reset_numeric_entry()
+            self.outreset(keypad, 3, 3, False)
+            for i in range(3):
+                self.outreset(keypad, i, 3, False)
+            self.release(keypad, (12, 15))
+            self.entry_mode = None
         else:
             self.num = self.buf
             self.buf = 0
@@ -137,14 +169,32 @@ class BackgroundContext(PLCContext, NumericEntry):
             self.at_mode = True
 
     def handle_record(self, pin):
-        """Record (confirm first)"""
-        if self.at_mode:
+        if KEYPAD_MAP[self.entry_mode] == " Ch":
+            self.handle_enter(pin)
             self.buf = 100
             self.handle_enter(pin)
+        elif self.record_enable:
+            if KEYPAD_MAP[self.entry_mode] == "Grp":
+                g = self.manager.get_list("groups").new(self.buf)
+                for i, j in self.manager.dimmers.items():
+                    g[i] = j / DMX_MAX_SLOT_VALUE
+                self.app.protocol.send_message(GroupMessage("update",g))
+            elif KEYPAD_MAP[self.entry_mode] == "Cue":
+                self.status("*No Cue Ops*")
+            self.reset_numeric_entry()
+            self.release(keypad, (12, 15))
+            for i in range(4):
+                self.outreset(keypad, i, 3, False)
+            self.entry_mode = None
+        else:
+            self.block_numeric_entry()
+            self.release(keypad, 12)
+            self.status("Rec " + KEYPAD_MAP[self.entry_mode]
+                        + " " + justify(self.buf, 3, True))
+            self.record_enable = True
 
     def handle_add_remove(self, pin):
         """Launch new context"""
-        pass
         
     def handle_gm(self, *args):
         val = faders.get(11)
