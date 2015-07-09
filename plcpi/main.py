@@ -35,8 +35,8 @@ class PLCRemote(HardwareApp):
         
     def run(self, predisp, conf=conf):
         predisp.animateRow(2, "Step 2 of 5")
-        predisp.animateRow(3, "Connecting to wifi...")
-        wifi()
+        predisp.animateRow(3, "Preparing wifi...")
+        wifi(predisp, conf)
         predisp.animateRow(2, "Step 3 of 5")
         predisp.animateRow(3, "Trying server...")
         try:
