@@ -39,11 +39,6 @@ KEYPAD_MAP = {
     14: " * ",
     15: "Rec"
 }
-
-def light_numeric_entry(self):
-    for i in range(3):
-        self.output(keypad, i, 0, str_to_bools("XXX "))
-    self.output(keypad, 3, 0, str_to_bools(" X  "))
         
 class PLCContext(Context):
     def __init__(self, app):
@@ -77,7 +72,9 @@ class NumericEntry:
     def prep_numeric_entry(self):
         self.capture(keypad, (0,1,2,4,5,6,8,9,10,13), self.handle_number)
         self.capture(keypad, 14, self.handle_enter)
-        light_numeric_entry(self)
+        for i in range(3):
+            self.output(keypad, i, 0, str_to_bools("XXX"))
+        self.output(keypad, 3, 1, str_to_bools("X "))
         self.ready = False
         self.buf = 0
         
@@ -106,14 +103,17 @@ class BackgroundContext(PLCContext, NumericEntry):
 
     def begin_entry(self, pin):
         self.entry_mode = pin
+        for i in range(3):
+            self.output(keypad, i, 3, False)
+        self.output(keypad, pin // 4, 3, True)
         self.at_mode = False
         self.prep_numeric_entry()
         if pin == 11:
             self.limit = conf["dimmers"]
         else:
             self.limit = 999
-            self.capture(keypad, 15, self.handle_record)
             self.capture(keypad, 12, self.handle_add_remove)
+        self.capture(keypad, 15, self.handle_record)
         self.status(KEYPAD_MAP[pin] + " " * 4)
         
     def handle_number(self, pin):
@@ -133,6 +133,7 @@ class BackgroundContext(PLCContext, NumericEntry):
             self.limit = 99
             self.status(KEYPAD_MAP[self.entry_mode] + " " +
                         justify(self.num, 3, True) + " @   ")
+            self.output(keypad, 3, 3, True)
             self.at_mode = True
 
     def handle_record(self, pin):
