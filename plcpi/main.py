@@ -14,7 +14,7 @@ class PLCRemote(HWApp):
         self.bg = BackgroundContext(self)
         self.manager = Manager(self.bg)
 
-        print(conf["server"])
+    def run(self, conf):
         coro = self.loop.create_connection(lambda: ClientProtocol(
             conf["user"], conf["password"], self.manager),
             conf["server"]["address"], conf["server"]["port"])
